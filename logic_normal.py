@@ -13,7 +13,7 @@ from lxml.builder import E
 from lxml import html
 
 # sjva 공용
-from framework import app, db, scheduler, path_app_root, celery
+from framework import app, db, scheduler, path_app_root, celery, SystemModelSetting
 from framework.util import Util
 
 # 패키지
@@ -74,6 +74,68 @@ class LogicNormal(object):
                     E.enclosure(url=item['file_url'], length=item['file_size'], type='audio/mp3'),
                     E.description(item['summary'])
                 ))
+            return app.response_class(ET.tostring(root, pretty_print=True, xml_declaration=True, encoding="utf-8"), mimetype='application/xml')
+        except Exception as e: 
+                logger.error('Exception:%s', e)
+                logger.error(traceback.format_exc())
+
+    @staticmethod
+    def make_klive(sub):
+        try:
+            from klive.logic_klive import LogicKlive
+            from klive.model import  ModelSetting as KliveModelSetting
+            if LogicKlive.source_list is None:
+                tmp = LogicKlive.channel_load_from_site()
+            instance = LogicKlive.source_list['pooq'] 
+            #logger.debug(instance.get_channel_list())
+            #instance = SourcePooq('pooq', arg['pooq_id'], arg['pooq_pw'], None)
+
+            token = None
+            if KliveModelSetting.get_bool('use_token'):
+                token = SystemModelSetting.get('unique')
+
+            
+
+            tmp = builder.ElementMaker(nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
+            root = tmp.rss(version="2.0")
+            EE = builder.ElementMaker(namespace="http://www.itunes.com/dtds/podcast-1.0.dtd", nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
+            channel_tag = (
+                E.channel(
+                    E.title('KLive Radio'),
+                    E.link(),
+                    E.description('KLive Radio'),
+                    E.language('ko-kr'),
+                    E.copyright(''),
+                    EE.subtitle(),
+                    EE.author(),
+                    EE.summary('KLive Radio'),
+                    EE.category('Radio'),
+                    EE.image(),
+                    EE.explicit('no'),
+                    EE.keywords('Radio'),
+                )
+            )
+            root.append(channel_tag)
+            for idx, c in enumerate(instance.get_channel_list()):
+                if not c.is_tv:
+                    logger.debug(c.title)
+                    logger.debug(c.current)
+                    logger.debug(c.source_id)
+                    logger.debug(c.source)
+                    url = '%s/klive/api/url.mp3?m=url&s=%s&i=%s' % (SystemModelSetting.get('ddns'), c.source, c.source_id)
+                    if token is not None:
+                        url += '&token=%s' % token
+
+                    channel_tag.append(E.item (
+                        E.title(c.title),
+                        EE.subtitle(c.current),
+                        EE.summary(c.current),
+                        E.guid(str(idx+1)),
+                        E.pubDate(datetime.now().strftime('%a, %d %b %Y %H:%M:%S') + ' +0900'),
+                        #EE.duration(),
+                        E.enclosure(url=url), #, length=item['file_size'], type='audio/mp3'),
+                        E.description(c.current)
+                    ))
             return app.response_class(ET.tostring(root, pretty_print=True, xml_declaration=True, encoding="utf-8"), mimetype='application/xml')
         except Exception as e: 
                 logger.error('Exception:%s', e)
