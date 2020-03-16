@@ -122,7 +122,7 @@ class LogicNormal(object):
                     logger.debug(c.current)
                     logger.debug(c.source_id)
                     logger.debug(c.source)
-                    url = '%s/klive/api/url.mp3?m=url&s=%s&i=%s' % (SystemModelSetting.get('ddns'), c.source, c.source_id)
+                    url = '%s/klive/api/url.m3u8?m=url&s=%s&i=%s' % (SystemModelSetting.get('ddns'), c.source, c.source_id)
                     if token is not None:
                         url += '&token=%s' % token
 
