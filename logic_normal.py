@@ -41,24 +41,25 @@ class LogicNormal(object):
     def make_podbbang(channel_id):
         try:
             url = 'http://www.podbbang.com/ch/%s' % channel_id
+            logger.debug(url)
             tree = html.fromstring(requests.get(url).content)
             tmp = builder.ElementMaker(nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
             root = tmp.rss(version="2.0")
             EE = builder.ElementMaker(namespace="http://www.itunes.com/dtds/podcast-1.0.dtd", nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
             channel_tag = (
                 E.channel(
-                    E.title(tree.xpath('//*[@id="all_title"]/dt/div/p/text()')[0].strip()),
+                    E.title(tree.xpath('//*[@id="podcastDetails"]/div[3]/h3/text()')[0].strip()),
                     E.link(url),
-                    E.description(tree.xpath('//*[@id="podcast_summary"]/text()')[0].strip()),
+                    E.description(tree.xpath('//*[@id="podcastDetails"]/div[3]/div[1]/text()')[0].strip()),
                     E.language('ko-kr'),
                     E.copyright(''),
                     EE.subtitle(),
                     EE.author(),
-                    EE.summary(tree.xpath('//*[@id="podcast_summary"]/text()')[0].strip()),
-                    EE.category(text=tree.xpath('//*[@id="header_wrap"]/div/div[1]/div[2]/span/a/text()')[0].strip()),
-                    EE.image(href=tree.xpath('//*[@id="podcast_thumb"]/img')[0].attrib['src']),
+                    EE.summary(tree.xpath('//*[@id="podcastDetails"]/div[3]/div[1]/text()')[0].strip()),
+                    EE.category(text=tree.xpath('//*[@id="podcastDetails"]/div[3]/span/a/text()')[0].strip()),
+                    EE.image(href=tree.xpath('//*[@id="podcastDetails"]/div[3]/img')[0].attrib['src']),
                     EE.explicit('no'),
-                    EE.keywords(tree.xpath('//*[@id="header_wrap"]/div/div[1]/div[2]/span/a/text()')[0].strip()),
+                    #EE.keywords(tree.xpath('//*[@id="header_wrap"]/div/div[1]/div[2]/span/a/text()')[0].strip()),
                 )
             )
             root.append(channel_tag)
