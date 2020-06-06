@@ -88,12 +88,10 @@ class LogicNormal(object):
             if LogicKlive.source_list is None:
                 tmp = LogicKlive.channel_load_from_site()
             instance = LogicKlive.source_list['pooq'] 
-            #logger.debug(instance.get_channel_list())
-            #instance = SourcePooq('pooq', arg['pooq_id'], arg['pooq_pw'], None)
-
-            token = None
-            if KliveModelSetting.get_bool('use_token'):
-                token = SystemModelSetting.get('unique')
+            
+            #token = None
+            #if KliveModelSetting.get_bool('use_token'):
+            #    token = SystemModelSetting.get('unique')
 
             
 
