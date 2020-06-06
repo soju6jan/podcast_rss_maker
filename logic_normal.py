@@ -87,11 +87,8 @@ class LogicNormal(object):
             from klive.model import  ModelSetting as KliveModelSetting
             if LogicKlive.source_list is None:
                 tmp = LogicKlive.channel_load_from_site()
-            instance = LogicKlive.source_list['pooq'] 
-            
-            #token = None
-            #if KliveModelSetting.get_bool('use_token'):
-            #    token = SystemModelSetting.get('unique')
+            instance = LogicKlive.source_list['wavve'] 
+            from system.model import ModelSetting as SystemModelSetting
 
             
 
@@ -122,8 +119,8 @@ class LogicNormal(object):
                     logger.debug(c.source_id)
                     logger.debug(c.source)
                     url = '%s/klive/api/url.m3u8?m=url&s=%s&i=%s' % (SystemModelSetting.get('ddns'), c.source, c.source_id)
-                    if token is not None:
-                        url += '&token=%s' % token
+                    if SystemModelSetting.get_bool('auth_use_apikey'):
+                        url += '&apikey=%s' % SystemModelSetting.get('auth_apikey')
 
                     channel_tag.append(E.item (
                         E.title(c.title),
