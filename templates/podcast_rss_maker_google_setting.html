@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div>
-  {{ macros.info_text_go('tmp_pb_api', 'API', value=arg['tmp_pb_api'], desc=['', '예) 뉴스공장. 채널ID : 12548', '채널ID 부분만 변경하여 사용']) }}
-  {{ macros.setting_button([['go_btn', 'Go 팟빵']]) }}
+  {{ macros.info_text_go('sample', 'API', value=arg['sample'], desc=['', 'remote : rclone 리모트 경로', 'title : 제목', 'desc, image, genre 생략가능']) }}
 </div> <!--전체-->
 
 <script type="text/javascript">

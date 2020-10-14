@@ -35,8 +35,9 @@ class LogicGoogle(LogicModuleBase):
     def process_menu(self, sub, req):
         arg = P.ModelSetting.to_dict()
         if sub == 'setting':
-            arg['sample'] = SystemModelSetting.get('ddns')
-            arg['apikey'] = SystemModelSetting.get('auth_apikey') if SystemModelSetting.get_bool('auth_use_apikey') else ''
+            arg['sample'] = '%s/%s/api/google/rss?remote=[구글리모트]&title=[제목]&desc=&image=&genre=' % (SystemModelSetting.get('ddns'), package_name)
+            if SystemModelSetting.get_bool('auth_use_apikey'):
+                arg['sample'] += '&apikey=%s' % SystemModelSetting.get('auth_apikey')
             return render_template('{package_name}_{module_name}_{sub}.html'.format(package_name=P.package_name, module_name=self.name, sub=sub), arg=arg)
         return render_template('sample.html', title='%s - %s' % (package_name, sub))
     
@@ -70,27 +71,28 @@ class LogicGoogle(LogicModuleBase):
                     EE.subtitle(),
                     EE.author(),
                     EE.summary(desc),
-                    EE.category(genre),
-                    EE.image(image),
+                    EE.category(text=genre),
+                    EE.image(href=image),
                     EE.explicit('no'),
                 )
             )
             root.append(channel_tag)
             import rclone 
-            lsjson = RcloneTool2.lsjson(rclone.Logic.path_rclone, rclone.Logic.path_config, remote, option=['--files-only'])
+            lsjson = RcloneTool2.lsjson(rclone.Logic.path_rclone, rclone.Logic.path_config, remote, option=['-R', '--files-only'])
             startdate= datetime.now() + timedelta(days=len(lsjson)*-1)
-            for item in lsjson:
-                logger.debug(item)
+            for item in list(reversed(lsjson)):
+                #logger.debug(item)
                 if not item['MimeType'].startswith('audio'):
                     continue
                 channel_tag.append(E.item (
                     E.title(item['Name']),
                     #EE.subtitle(item['Name']),
-                    EE.summary(item['Name']),
+                    EE.summary(u'Path : {}/{}<br>Size : {}'.format(remote, item['Path'], Util.sizeof_fmt(item['Size'], suffix='B'))),
                     E.guid(item['Name']),
                     E.pubDate(startdate.strftime('%a, %d %b %Y %H:%M:%S') + ' +0900'),
                     EE.duration(),
-                    E.enclosure(url='https://drive.google.com/uc?export=download&id={}'.format(item['ID']), length=str(item['Size']), type=item['MimeType']),
+                    #E.enclosure(url='https://drive.google.com/uc?export=download&id={}'.format(item['ID']), length=str(item['Size']), type=item['MimeType']),
+                    E.enclosure(url='https://drive.google.com/uc?export=download&id={}'.format(item['ID']), length=str(item['Size']), type='audio/mp3'),
                     #E.description(item['Name'])
                 ))
                 startdate = startdate + timedelta(days=1)
