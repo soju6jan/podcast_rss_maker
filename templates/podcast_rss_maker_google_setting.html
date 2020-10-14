@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+  {{ macros.info_text_go('tmp_pb_api', 'API', value=arg['tmp_pb_api'], desc=['', '예) 뉴스공장. 채널ID : 12548', '채널ID 부분만 변경하여 사용']) }}
+  {{ macros.setting_button([['go_btn', 'Go 팟빵']]) }}
+</div> <!--전체-->
+
+<script type="text/javascript">
+var package_name = "{{arg['package_name'] }}";
+
+$(document).ready(function(){
+});
+
+$("body").on('click', '#go_btn', function(e){
+  e.preventDefault();
+  window.open("http://www.podbbang.com/", "_blank");
+});
+</script>    
+{% endblock %}

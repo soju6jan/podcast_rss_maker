@@ -1,99 +1,68 @@
 # -*- coding: utf-8 -*-
-#########################################################
 # python
-import os
-import traceback
-
+import os, traceback
 # third-party
-from flask import Blueprint, request, render_template, redirect, jsonify 
-from flask_login import login_required
-
+from flask import Blueprint
 # sjva 공용
 from framework.logger import get_logger
-from framework import app, db, scheduler, path_data, socketio, check_api
-from system.model import ModelSetting as SystemModelSetting
-
+from framework import app, path_data
+from framework.util import Util
+from framework.common.plugin import get_model_setting, Logic, default_route
 # 패키지
-package_name = __name__.split('.')[0]
-logger = get_logger(package_name)
-from .logic import Logic
-from .model import ModelSetting
 #########################################################
+class P(object):
+    package_name = __name__.split('.')[0]
+    logger = get_logger(package_name)
+    blueprint = Blueprint(package_name, package_name, url_prefix='/%s' %  package_name, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 
-blueprint = Blueprint(package_name, package_name, url_prefix='/%s' %  package_name, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
+    menu = {
+        'main' : [package_name, 'Podcast RSS Maker'],
+        'sub' : [
+            ['podbbang', '팟빵'], ['google', '구글 드라이브'], ['log', '로그']
+        ],
+        'sub2' : {
+            'podbbang' : [
+                ['setting', '설정'], 
+            ],
+            'google' : [
+                ['setting', '설정'],
+            ],
+        },
+        'category' : 'service'
+    }
 
-menu = {
-    'main' : [package_name, 'Podcast RSS Maker'],
-    'sub' : [
-        ['setting', '설정'], ['log', '로그']
-    ],
-    'category' : 'service'
-}
+    plugin_info = {
+        'version' : '0.2.0.0',
+        'name' : 'Podcast RSS Maker',
+        'category_name' : 'service',
+        'developer' : 'soju6jan',
+        'description' : 'Podcast 지원',
+        'home' : 'https://github.com/soju6jan/podcast_feed_maker',
+        'more' : '',
+    }
 
-plugin_info = {
-    'version' : '0.1.0.0',
-    'name' : 'Podcast RSS Maker',
-    'category_name' : 'service',
-    'developer' : 'soju6jan',
-    'description' : 'Podcast 지원',
-    'home' : 'https://github.com/soju6jan/podcast_feed_maker',
-    'more' : '',
-}
+    ModelSetting = get_model_setting(package_name, logger)
+    logic = None
+    module_list = None
+    home_module = 'podbbang'
 
-def plugin_load():
-    Logic.plugin_load()
 
-def plugin_unload():
-    Logic.plugin_unload()
-
-#########################################################
-# WEB Menu   
-#########################################################
-@blueprint.route('/')
-def home():
-    return redirect('/%s/setting' % package_name)
-
-@blueprint.route('/<sub>')
-@login_required
-def first_menu(sub): 
-    if sub == 'setting':
-        arg = ModelSetting.to_dict()
-        arg['package_name']  = package_name
-        arg['tmp_pb_api'] = '%s/%s/api/podbbang/%s' % (SystemModelSetting.get('ddns'), package_name, '12548')
-        if SystemModelSetting.get_bool('auth_use_apikey'):
-            arg['tmp_pb_api'] += '?apikey=%s' % SystemModelSetting.get('auth_apikey')
-        return render_template('{package_name}_{sub}.html'.format(package_name=package_name, sub=sub), arg=arg)
-    elif sub == 'log':
-        return render_template('log.html', package=package_name)
-    return render_template('sample.html', title='%s - %s' % (package_name, sub))
-
-#########################################################
-# For UI                                                          
-#########################################################
-@blueprint.route('/ajax/<sub>', methods=['GET', 'POST'])
-@login_required
-def ajax(sub):
+def initialize():
     try:
-        if sub == 'setting_save':
-            ret = ModelSetting.setting_save(request)
-            return jsonify(ret)
+        app.config['SQLALCHEMY_BINDS'][P.package_name] = 'sqlite:///%s' % (os.path.join(path_data, 'db', '{package_name}.db'.format(package_name=P.package_name)))
+        from framework.util import Util
+        Util.save_from_dict_to_json(P.plugin_info, os.path.join(os.path.dirname(__file__), 'info.json'))
+        from .logic_podbbang import LogicPodbbang
+        from .logic_google import LogicGoogle
+
+        P.module_list = [LogicPodbbang(P), LogicGoogle(P)]
+        P.logic = Logic(P)
+        default_route(P)
     except Exception as e: 
-        logger.error('Exception:%s', e)
-        logger.error(traceback.format_exc())  
+        P.logger.error('Exception:%s', e)
+        P.logger.error(traceback.format_exc())
 
-#########################################################
-# API - 외부
-#########################################################
-@blueprint.route('/api/<sub>/<sub2>', methods=['GET', 'POST'])
-@check_api
-def api(sub, sub2):
-    try:
-        if sub == 'podbbang':
-            from .logic_normal import LogicNormal
-            return LogicNormal.make_podbbang(sub2)
-        elif sub == 'klive':
-            from .logic_normal import LogicNormal
-            return LogicNormal.make_klive(sub2)
-    except Exception as e:
-        logger.debug('Exception:%s', e)
-        logger.debug(traceback.format_exc())
+initialize()
+
+
+
