@@ -16,16 +16,16 @@ class P(object):
     blueprint = Blueprint(package_name, package_name, url_prefix='/%s' %  package_name, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 
     menu = {
-        'main' : [package_name, 'Podcast RSS Maker'],
+        'main' : [package_name, u'Podcast RSS Maker'],
         'sub' : [
-            ['podbbang', '팟빵'], ['google', '구글 드라이브'], ['log', '로그']
+            ['podbbang', u'팟빵'], ['google', u'구글 드라이브'], ['log', u'로그']
         ],
         'sub2' : {
             'podbbang' : [
-                ['setting', '설정'], 
+                ['setting', u'설정'], 
             ],
             'google' : [
-                ['setting', '설정'],
+                ['setting', u'설정'],
             ],
         },
         'category' : 'service'
@@ -33,10 +33,10 @@ class P(object):
 
     plugin_info = {
         'version' : '0.2.0.0',
-        'name' : 'Podcast RSS Maker',
+        'name' : u'Podcast RSS Maker',
         'category_name' : 'service',
         'developer' : 'soju6jan',
-        'description' : 'Podcast 지원',
+        'description' : u'Podcast 지원',
         'home' : 'https://github.com/soju6jan/podcast_feed_maker',
         'more' : '',
     }
