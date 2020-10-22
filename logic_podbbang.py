@@ -67,7 +67,7 @@ class LogicPodbbang(LogicModuleBase):
         try:
             url = 'http://www.podbbang.com/ch/%s' % channel_id
             logger.debug(url)
-            tree = html.fromstring(requests.get(url).content)
+            tree = html.fromstring(requests.get(url).text)
             tmp = builder.ElementMaker(nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
             root = tmp.rss(version="2.0")
             EE = builder.ElementMaker(namespace="http://www.itunes.com/dtds/podcast-1.0.dtd", nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
