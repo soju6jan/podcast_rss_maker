@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #########################################################
 # python
-import os
+import os, json, re
 import traceback
 import requests
 from datetime import datetime
@@ -66,24 +66,27 @@ class LogicPodbbang(LogicModuleBase):
     def make_xml(self, channel_id):
         try:
             url = 'http://www.podbbang.com/ch/%s' % channel_id
-            logger.debug(url)
-            tree = html.fromstring(requests.get(url).text)
+            text = requests.get(url).text
+            text = text.split('channel:')[1].split(',playlists:')[0]
+            text = re.sub('(?P<pre>[,{])(?P<key>\w+):', '\g<pre>"\g<key>":', text)
+            text = re.sub(':(?P<value>\w+),', ':"\g<value>",', text)
+            data = json.loads(text)
+            #logger.debug(self.dump(data))
             tmp = builder.ElementMaker(nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
             root = tmp.rss(version="2.0")
             EE = builder.ElementMaker(namespace="http://www.itunes.com/dtds/podcast-1.0.dtd", nsmap={'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'})
             channel_tag = (
                 E.channel(
-                    E.title(tree.xpath('//*[@id="podcastDetails"]/div[3]/h3/text()')[0].strip()),
+                    E.title(data['title']),
                     E.link(url),
-                    #E.description(tree.xpath('//*[@id="podcastDetails"]/div[3]/div[1]/text()')[0].strip()),
                     E.description(),
                     E.language('ko-kr'),
                     E.copyright(''),
                     EE.subtitle(),
                     EE.author(),
-                    EE.summary(tree.xpath('//*[@id="podcastDetails"]/div[3]/div[1]/text()')[0].strip()),
-                    EE.category(text=tree.xpath('//*[@id="podcastDetails"]/div[3]/span/a/text()')[0].strip()),
-                    EE.image(href=tree.xpath('//*[@id="podcastDetails"]/div[3]/img')[0].attrib['src']),
+                    EE.summary(data['description']),
+                    EE.category(text=data['category']['name']),
+                    EE.image(href=data['image']),
                     EE.explicit('no'),
                 )
             )
