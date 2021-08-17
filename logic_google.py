@@ -16,7 +16,7 @@ from lxml import html
 # sjva 공용
 from framework import app, db, scheduler, path_app_root, celery, SystemModelSetting
 from framework.util import Util
-from framework.common.plugin import LogicModuleBase
+from plugin import LogicModuleBase
 from framework.common.share import RcloneTool2
 # 패키지
 from .plugin import P
