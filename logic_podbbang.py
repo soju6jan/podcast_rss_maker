@@ -67,7 +67,7 @@ class LogicPodbbang(LogicModuleBase):
         try:
             url = 'http://www.podbbang.com/ch/%s' % channel_id
             text = requests.get(url).text
-            text = text.split('channel:')[1].split(',playlists:')[0]
+            text = text.split('channel:')[1].split(',notices:')[0]
             text = re.sub('(?P<pre>[,{])(?P<key>\w+):', '\g<pre>"\g<key>":', text)
             text = re.sub(':(?P<value>\w+),', ':"\g<value>",', text)
             data = json.loads(text)
