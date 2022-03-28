@@ -32,12 +32,12 @@ class P(object):
     }
 
     plugin_info = {
-        'version' : '0.2.0.0',
-        'name' : u'Podcast RSS Maker',
+        'version' : '0.2.0.1',
+        'name' : 'podcast_rss_maker',
         'category_name' : 'service',
         'developer' : 'soju6jan',
         'description' : u'Podcast 지원',
-        'home' : 'https://github.com/soju6jan/podcast_feed_maker',
+        'home' : 'https://github.com/soju6jan/podcast_rss_maker',
         'more' : '',
     }
 
