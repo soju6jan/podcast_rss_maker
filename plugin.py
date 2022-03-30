@@ -1,15 +1,9 @@
-# -*- coding: utf-8 -*-
-# python
-import os, traceback
-# third-party
-from flask import Blueprint
-# sjva 공용
-from framework.logger import get_logger
-from framework import app, path_data
-from framework.util import Util
-from plugin import get_model_setting, Logic, default_route, PluginUtil
-# 패키지
-#########################################################
+import os, sys, traceback, re
+from datetime import datetime, timedelta
+from flask import Blueprint, render_template, jsonify, redirect
+from framework import app, path_data, path_app_root, db, scheduler, SystemModelSetting, socketio, celery, get_logger
+from plugin import LogicModuleBase, get_model_setting, Logic, default_route, PluginUtil
+
 class P(object):
     package_name = __name__.split('.')[0]
     logger = get_logger(package_name)
@@ -46,6 +40,10 @@ class P(object):
     module_list = None
     home_module = 'podbbang'
 
+from tool_base import d
+logger = P.logger
+package_name = P.package_name
+ModelSetting = P.ModelSetting
 
 def initialize():
     try:
